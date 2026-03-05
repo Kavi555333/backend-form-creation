@@ -834,7 +834,7 @@ app.listen(port, () => {
   console.log('');
 });
 
-// ── Graceful shutdown ──────────────────────────────────────
+// ── 5.Graceful shutdown ──────────────────────────────────────
 process.on('SIGINT', () => {
   console.log('\n🛑 Shutting down...');
   connection.destroy((err) => {
@@ -842,7 +842,7 @@ process.on('SIGINT', () => {
     else console.log('✅ Snowflake connection closed.');
     process.exit(0);
   });
-});
+}); 
 
 
 
