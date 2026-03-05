@@ -626,13 +626,43 @@ function getIP(req) {
 }
 
 // ── 2. Middleware ──────────────────────────────────────────
+// app.use(cors({
+//   origin: process.env.FRONTEND_URL || 'http://localhost:5173',
+//   methods: ['POST', 'GET'],
+//   allowedHeaders: ['Content-Type'],
+// }));
+
+// app.use(bodyParser.json()); 
+
 app.use(cors({
-  origin: process.env.FRONTEND_URL || 'http://localhost:5173',
-  methods: ['POST', 'GET'],
+  origin: function (origin, callback) {
+    // Strip trailing slash for comparison
+    const allowed = [
+      'http://localhost:5173',
+      'http://localhost:3000',
+      'https://form-creation-pi.vercel.app',
+      process.env.FRONTEND_URL?.replace(/\/$/, ''), // removes trailing slash
+    ].filter(Boolean);
+
+    // Allow requests with no origin (Postman, health checks)
+    if (!origin) return callback(null, true);
+
+    const normalizedOrigin = origin.replace(/\/$/, '');
+
+    if (allowed.includes(normalizedOrigin)) {
+      callback(null, true);
+    } else {
+      console.error(`❌ CORS blocked origin: ${origin}`);
+      callback(new Error(`CORS policy: origin ${origin} not allowed`));
+    }
+  },
+  methods: ['GET', 'POST', 'OPTIONS'],
   allowedHeaders: ['Content-Type'],
+  credentials: false,
 }));
 
-app.use(bodyParser.json());
+// ✅ Handle preflight OPTIONS requests explicitly
+app.options('*', cors());
 
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000,
